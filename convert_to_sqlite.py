@@ -1,7 +1,11 @@
 import sqlite3
 import json
+import os
 
 DB = "data/nfwp.db"
+
+if os.path.exists(DB):
+    os.remove(DB)
 
 conn = sqlite3.connect(DB)
 cursor = conn.cursor()

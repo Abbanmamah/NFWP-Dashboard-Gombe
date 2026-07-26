@@ -3,7 +3,7 @@ import requests
 
 DB_PATH = "data/nfwp.db"
 
-DB_URL = "https://github.com/Abbanmamah/NFWP-Dashboard-Gombe/releases/download/v1.0/nfwp.db"
+DB_URL = "https://github.com/Abbanmamah/NFWP-Dashboard-Gombe/releases/download/v1.1/nfwp.db"
 
 
 def ensure_database():
