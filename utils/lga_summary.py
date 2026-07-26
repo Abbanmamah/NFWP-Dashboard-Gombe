@@ -1,7 +1,9 @@
 from collections import defaultdict
+import streamlit as st
 from utils.calculations import to_number
 
 
+@st.cache_data
 def get_lga_summary(membership, savings):
 
     summary = defaultdict(lambda: {
@@ -60,7 +62,6 @@ def get_lga_summary(membership, savings):
         summary[lga]["Loan Disbursed"] += loan_disbursed
         summary[lga]["Loan Repaid"] += loan_repaid
 
-        # Calculate utilisation ourselves
         if loan_fund > 0:
             utilisation = (loan_disbursed / loan_fund) * 100
 
