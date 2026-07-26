@@ -7,6 +7,7 @@ DB_URL = "https://github.com/Abbanmamah/NFWP-Dashboard-Gombe/releases/download/v
 
 
 def ensure_database():
+
     if os.path.exists(DB_PATH):
         return
 
@@ -14,7 +15,12 @@ def ensure_database():
 
     print("Downloading database...")
 
-    response = requests.get(DB_URL, stream=True)
+    response = requests.get(
+        DB_URL,
+        stream=True,
+        timeout=120
+    )
+
     response.raise_for_status()
 
     with open(DB_PATH, "wb") as f:
