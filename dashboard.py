@@ -58,6 +58,20 @@ st.set_page_config(
 )
 
 # =====================================================
+# DEVICE NOTICE
+# =====================================================
+
+st.warning("""
+🖥️ **Recommended Device**
+
+This dashboard is optimized for **Desktop and Laptop computers**.
+
+For the best performance, please use a Desktop or Laptop browser.
+
+⚠️ Mobile phones and tablets are not currently supported and may cause the application to stop responding.
+""")
+
+# =====================================================
 # NFWP THEME
 # =====================================================
 
