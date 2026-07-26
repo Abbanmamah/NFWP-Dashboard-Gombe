@@ -1,0 +1,12 @@
+.env
+
+__pycache__/
+*.pyc
+
+.streamlit/
+
+.vscode/
+
+data/nfwp.db
+data/*.json
+!data/last_sync.json
