@@ -1,6 +1,9 @@
 from collections import Counter
 
+import streamlit as st
 
+
+@st.cache_data
 def get_data_quality(membership, savings):
 
     membership_ids = [
@@ -47,14 +50,12 @@ def get_data_quality(membership, savings):
         if not r.get("location_details/community")
     )
 
-    zero_members = 0
-
-    for r in membership:
-
-        members = r.get("mem_det/member_details", [])
-
-        if not isinstance(members, list) or len(members) == 0:
-            zero_members += 1
+    zero_members = sum(
+        1
+        for r in membership
+        if not isinstance(r.get("mem_det/member_details", []), list)
+        or len(r.get("mem_det/member_details", [])) == 0
+    )
 
     return {
 
