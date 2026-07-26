@@ -9,12 +9,16 @@ from utils.kobo_config import *
 DB = "data/nfwp.db"
 SYNC_FILE = "data/last_sync.json"
 
+PAGE_SIZE = 100
+
 
 def load_last_sync():
     if not os.path.exists(SYNC_FILE):
         return {
             "membership": "",
-            "savings": ""
+            "savings": "",
+            "membership_added": 0,
+            "savings_added": 0
         }
 
     with open(SYNC_FILE, "r", encoding="utf-8") as f:
@@ -26,7 +30,56 @@ def save_last_sync(sync_data):
         json.dump(sync_data, f, indent=4)
 
 
-def download_kobo_data(server, asset_id, token, last_sync=""):
+def insert_records(table, records):
+
+    conn = sqlite3.connect(DB, timeout=30)
+    cursor = conn.cursor()
+
+    added = 0
+
+    try:
+
+        for record in records:
+
+            record_id = (
+                record.get("_uuid")
+                or record.get("_id")
+                or record.get("uuid")
+            )
+
+            if not record_id:
+                continue
+
+            cursor.execute(
+                f"SELECT id FROM {table} WHERE id=?",
+                (record_id,)
+            )
+
+            if cursor.fetchone():
+                continue
+
+            cursor.execute(
+                f"""
+                INSERT INTO {table}(id,data)
+                VALUES(?,?)
+                """,
+                (
+                    record_id,
+                    json.dumps(record)
+                )
+            )
+
+            added += 1
+
+        conn.commit()
+
+    finally:
+        conn.close()
+
+    return added
+
+
+def sync_asset(server, asset_id, token, table, last_sync=""):
 
     url = f"{server}/api/v2/assets/{asset_id}/data/"
 
@@ -34,97 +87,71 @@ def download_kobo_data(server, asset_id, token, last_sync=""):
         "Authorization": f"Token {token}"
     }
 
-    params = {}
+    start = 0
+    total_added = 0
 
-    if last_sync:
-        params["query"] = json.dumps({
-            "_submission_time": {
-                "$gt": last_sync
-            }
-        })
+    while True:
 
-    response = requests.get(
-        url,
-        headers=headers,
-        params=params
-    )
+        params = {
+            "limit": PAGE_SIZE,
+            "start": start
+        }
 
-    response.raise_for_status()
+        if last_sync:
+            params["query"] = json.dumps({
+                "_submission_time": {
+                    "$gt": last_sync
+                }
+            })
 
-    return response.json().get("results", [])
-
-
-def insert_records(table, records):
-
-    conn = sqlite3.connect(DB)
-    cursor = conn.cursor()
-
-    added = 0
-
-    for record in records:
-
-        record_id = (
-            record.get("_uuid")
-            or record.get("_id")
-            or record.get("uuid")
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=60
         )
 
-        if not record_id:
-            continue
+        response.raise_for_status()
 
-        cursor.execute(
-            f"SELECT id FROM {table} WHERE id=?",
-            (record_id,)
+        page = response.json().get("results", [])
+
+        if not page:
+            break
+
+        added = insert_records(table, page)
+
+        total_added += added
+
+        print(
+            f"{table}: downloaded {len(page)} records, added {added}"
         )
 
-        if cursor.fetchone():
-            continue
+        if len(page) < PAGE_SIZE:
+            break
 
-        cursor.execute(
-            f"""
-            INSERT INTO {table}(id,data)
-            VALUES(?,?)
-            """,
-            (
-                record_id,
-                json.dumps(record)
-            )
-        )
+        start += PAGE_SIZE
 
-        added += 1
-
-    conn.commit()
-    conn.close()
-
-    return added
+    return total_added
 
 
 def sync_kobo():
 
     sync_info = load_last_sync()
 
-    new_membership = download_kobo_data(
+    membership_added = sync_asset(
         KOBO_SERVER,
         MEMBERSHIP_ASSET_ID,
         KOBO_API_TOKEN,
-        sync_info["membership"]
+        "membership",
+        sync_info.get("membership", "")
     )
 
-    new_savings = download_kobo_data(
+    savings_added = sync_asset(
         KOBO_SERVER,
         SAVINGS_ASSET_ID,
         KOBO_API_TOKEN,
-        sync_info["savings"]
-    )
-
-    membership_added = insert_records(
-        "membership",
-        new_membership
-    )
-
-    savings_added = insert_records(
         "savings",
-        new_savings
+        sync_info.get("savings", "")
     )
 
     now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
