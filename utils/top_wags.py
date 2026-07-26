@@ -1,6 +1,9 @@
+import streamlit as st
+
 from utils.calculations import to_number
 
 
+@st.cache_data
 def get_top_wags(savings, top=True):
 
     rows = []
