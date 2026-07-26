@@ -1,4 +1,5 @@
 from utils.database import ensure_database
+ensure_database()
 
 ensure_database()
 
