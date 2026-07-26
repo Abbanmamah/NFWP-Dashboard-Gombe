@@ -1,9 +1,12 @@
 from collections import defaultdict
 from datetime import datetime
 
+import streamlit as st
+
 from utils.calculations import to_number
 
 
+@st.cache_data
 def get_monthly_trends(savings):
 
     monthly = defaultdict(lambda: {
