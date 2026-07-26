@@ -5,7 +5,7 @@ import streamlit as st
 DB = "data/nfwp.db"
 
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def load_membership_data():
 
     print("Loading membership from SQLite...")
@@ -29,7 +29,7 @@ def load_membership_data():
     return membership
 
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def load_savings_data():
 
     print("Loading savings from SQLite...")
