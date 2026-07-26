@@ -788,27 +788,31 @@ else:
         f"⚠ {issues:,} data quality issue(s) detected. Please review before reporting."
     )
 
-report = create_management_report(
-    summary_df=df,
-    trend_df=trend_df,
-    dq=dq,
-    top_df=top_df,
-    bottom_df=bottom_df,
-    total_wags=total_wags,
-    total_members=total_members,
-    total_savings=total_savings,
-    total_loan_fund=total_loan_fund,
-    total_loan_disbursed=total_loan_disbursed,
-    total_loan_repaid=total_loan_repaid,
-    outstanding_loan=outstanding_loan,
-    average_utilisation=loan_utilisation,
-)
+if st.button("📊 Generate Management Report"):
 
-st.download_button(
-    "📊 Download Management Report",
-    data=report,
-    file_name="NFWP_Gombe_Management_Report.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-)
+    with st.spinner("Generating report..."):
+
+        report = create_management_report(
+            summary_df=df,
+            trend_df=trend_df,
+            dq=dq,
+            top_df=top_df,
+            bottom_df=bottom_df,
+            total_wags=total_wags,
+            total_members=total_members,
+            total_savings=total_savings,
+            total_loan_fund=total_loan_fund,
+            total_loan_disbursed=total_loan_disbursed,
+            total_loan_repaid=total_loan_repaid,
+            outstanding_loan=outstanding_loan,
+            average_utilisation=loan_utilisation,
+        )
+
+    st.download_button(
+        "⬇ Download Management Report",
+        data=report,
+        file_name="NFWP_Gombe_Management_Report.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 st.success("✅ Dashboard loaded successfully.")
