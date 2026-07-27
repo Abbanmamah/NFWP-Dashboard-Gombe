@@ -9,4 +9,3 @@ __pycache__/
 
 data/nfwp.db
 data/*.json
-!data/last_sync.json
