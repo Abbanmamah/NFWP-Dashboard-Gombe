@@ -6,6 +6,8 @@ from datetime import datetime
 
 from utils.kobo_config import *
 
+from utils.github_upload import upload_file
+
 DB = "data/nfwp.db"
 SYNC_FILE = "data/last_sync.json"
 
@@ -170,6 +172,7 @@ def sync_kobo():
         sync_info.get("savings", "")
     )
 
+    # Save update files locally
     save_updates(
         MEMBERSHIP_UPDATE_FILE,
         membership_records
@@ -178,6 +181,17 @@ def sync_kobo():
     save_updates(
         SAVINGS_UPDATE_FILE,
         savings_records
+    )
+
+    # Upload update files to GitHub
+    upload_file(
+        MEMBERSHIP_UPDATE_FILE,
+        "updates/membership_updates.json"
+    )
+
+    upload_file(
+        SAVINGS_UPDATE_FILE,
+        "updates/savings_updates.json"
     )
 
     now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")

@@ -1,11 +1,12 @@
 from utils.database import ensure_database
 
+# Download database if it doesn't exist
 ensure_database()
 
 from utils.kobo_sync import sync_kobo
 from utils.kobo_sync import load_last_sync
-import streamlit as st
 
+import streamlit as st
 import pandas as pd
 from io import BytesIO
 
@@ -45,8 +46,6 @@ from utils.top_wags import get_top_wags
 from utils.report_export import create_management_report
 
 import pandas as pd
-
-ADMIN_PASSWORD = "Gombe@2026"
 
 # =====================================================
 # PAGE SETTINGS
