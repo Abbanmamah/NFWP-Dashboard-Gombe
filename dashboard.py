@@ -126,15 +126,6 @@ with header_text:
 
 st.divider()
 
-st.sidebar.header("Admin")
-
-password = st.sidebar.text_input(
-    "Admin Password",
-    type="password"
-)
-
-is_admin = password == ADMIN_PASSWORD
-
 # ======================================
 # KOBO SYNC
 # ======================================
