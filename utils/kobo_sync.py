@@ -9,6 +9,9 @@ from utils.kobo_config import *
 DB = "data/nfwp.db"
 SYNC_FILE = "data/last_sync.json"
 
+MEMBERSHIP_UPDATE_FILE = "data/membership_updates.json"
+SAVINGS_UPDATE_FILE = "data/savings_updates.json"
+
 PAGE_SIZE = 100
 
 
@@ -28,6 +31,16 @@ def load_last_sync():
 def save_last_sync(sync_data):
     with open(SYNC_FILE, "w", encoding="utf-8") as f:
         json.dump(sync_data, f, indent=4)
+
+
+def save_updates(filename, records):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(
+            records,
+            f,
+            indent=4,
+            ensure_ascii=False
+        )
 
 
 def insert_records(table, records):
@@ -89,6 +102,7 @@ def sync_asset(server, asset_id, token, table, last_sync=""):
 
     start = 0
     total_added = 0
+    all_new_records = []
 
     while True:
 
@@ -118,6 +132,8 @@ def sync_asset(server, asset_id, token, table, last_sync=""):
         if not page:
             break
 
+        all_new_records.extend(page)
+
         added = insert_records(table, page)
 
         total_added += added
@@ -131,14 +147,14 @@ def sync_asset(server, asset_id, token, table, last_sync=""):
 
         start += PAGE_SIZE
 
-    return total_added
+    return total_added, all_new_records
 
 
 def sync_kobo():
 
     sync_info = load_last_sync()
 
-    membership_added = sync_asset(
+    membership_added, membership_records = sync_asset(
         KOBO_SERVER,
         MEMBERSHIP_ASSET_ID,
         KOBO_API_TOKEN,
@@ -146,12 +162,22 @@ def sync_kobo():
         sync_info.get("membership", "")
     )
 
-    savings_added = sync_asset(
+    savings_added, savings_records = sync_asset(
         KOBO_SERVER,
         SAVINGS_ASSET_ID,
         KOBO_API_TOKEN,
         "savings",
         sync_info.get("savings", "")
+    )
+
+    save_updates(
+        MEMBERSHIP_UPDATE_FILE,
+        membership_records
+    )
+
+    save_updates(
+        SAVINGS_UPDATE_FILE,
+        savings_records
     )
 
     now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
