@@ -129,28 +129,27 @@ st.divider()
 # KOBO SYNC
 # ======================================
 
-col_sync1, col_sync2 = st.columns([1, 5])
+from datetime import datetime
 
-with col_sync1:
+sync_info = load_last_sync()
 
-    if st.button("🔄 Sync Latest Kobo Data"):
+last_sync = sync_info.get("membership")
 
-        with st.spinner("Downloading latest Kobo submissions..."):
+should_sync = False
 
-            result = sync_kobo()
+if last_sync:
+    last_sync_time = datetime.fromisoformat(last_sync)
+    hours = (datetime.now() - last_sync_time).total_seconds() / 3600
 
-        st.success(
-            f"""
-✅ Sync Completed
+    if hours >= 24:
+        should_sync = True
+else:
+    should_sync = True
 
-Membership Added: {result['membership_added']}
-
-Savings Added: {result['savings_added']}
-"""
-        )
-
-        st.rerun()
-
+if should_sync:
+    with st.spinner("Updating Kobo data..."):
+        sync_kobo()
+        
 # ======================================
 # LAST SYNC STATUS
 # ======================================
